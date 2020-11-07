@@ -7,7 +7,8 @@ import { FeedbackService } from '../Services/feedback.service'
 import { CaptchaService } from '../Services/captcha.service'
 import { UserService } from '../Services/user.service'
 import { FormControl, Validators } from '@angular/forms'
-import { Component, OnInit } from '@angular/core'
+import { Component, OnInit, SecurityContext } from '@angular/core'
+import { DomSanitizer } from '@angular/platform-browser'
 import { dom, library } from '@fortawesome/fontawesome-svg-core'
 import { faPaperPlane, faStar } from '@fortawesome/free-solid-svg-icons'
 import { FormSubmitService } from '../Services/form-submit.service'
@@ -36,7 +37,8 @@ export class ContactComponent implements OnInit {
   public error: any
 
   constructor (private userService: UserService, private captchaService: CaptchaService, private feedbackService: FeedbackService,
-    private formSubmitService: FormSubmitService, private translate: TranslateService, private snackBarHelperService: SnackBarHelperService) { }
+    private formSubmitService: FormSubmitService, private translate: TranslateService, private snackBarHelperService: SnackBarHelperService, 
+    private sanitizer: DomSanitizer) { }
 
   ngOnInit () {
     this.userService.whoAmI().subscribe((data: any) => {
@@ -63,7 +65,7 @@ export class ContactComponent implements OnInit {
   save () {
     this.feedback.captchaId = this.captchaId
     this.feedback.captcha = this.captchaControl.value
-    this.feedback.comment = `${this.feedbackControl.value} (${this.authorControl.value})`
+    this.feedback.comment = this.sanitizer.sanitize(SecurityContext.HTML, `${this.feedbackControl.value} (${this.authorControl.value})`)
     this.feedback.rating = this.rating
     this.feedback.UserId = this.userIdControl.value
     this.feedbackService.save(this.feedback).subscribe((savedFeedback) => {
